@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from itertools import cycle
 
 def sample_2d(num=1,xlim=[-1, 1],ylim=[-1, 1]):
     fig = plt.figure()
@@ -64,3 +65,15 @@ def plot_2d(sample,xlim=None,ylim=None,fig=None,mark='ro'):
     if needShow:
         plt.show()
     return fig
+
+def plot_cluster(X,W,C,title="Cluster"):
+    colors = cycle('bgrcmykbgrcmykbgrcmykbgrcmyk')
+    class_num=len(W)
+    plt.clf()
+    for k, col in zip(range(class_num), colors): # 并行遍历
+        C_k = C == [k]
+        plt.plot(X[C_k, 0], X[C_k, 1], col + '.')
+        plt.plot(W[k,0], W[k,1], 'o', markerfacecolor=col,
+                 markeredgecolor='k', markersize=14)
+    plt.title(title)
+    plt.show()
