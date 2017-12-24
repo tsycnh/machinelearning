@@ -1,6 +1,6 @@
 '''
-Cluster method
-author: Leon, date: 2017.12.04
+Vector quantization method
+author: Leon, date: 2017.12.09
 '''
 '''
 Data typy:
@@ -40,10 +40,8 @@ import numpy as np
 '''
 Vector Operations
 '''
-def v_euclid(x,y):
-    '''
-    Euclidean distance of vectors,
-    '''
+def v_euclid_dist(x, y):
+    # Euclidean distance of vectors,
     x_y_mat = np.zeros((len(x),len(y)))
     for j in range(len(x)):
         for i in range(len(y)):
@@ -51,17 +49,41 @@ def v_euclid(x,y):
     return x_y_mat
 
 
+def v_sq_euclid_dist(x,y):
+    # Squared Euclidean distance of vectors,
+    x_y_mat = np.zeros((len(x),len(y)))
+    for j in range(len(x)):
+        for i in range(len(y)):
+            x_y_mat[j,i] = np.linalg.norm(x[j] - y[i], ord=2, axis=0, keepdims=True)
+            x_y_mat[j,i] = x_y_mat[j,i]*x_y_mat[j,i]
+    return x_y_mat
+
+
+def v_manhattan_dist(x, y):
+    # Manhattan distance of vectors,
+    x_y_mat = np.zeros((len(x),len(y)))
+    for j in range(len(x)):
+        for i in range(len(y)):
+            x_y_mat[j,i] = np.linalg.norm(x[j] - y[i], ord=1, axis=0, keepdims=True)
+    return x_y_mat
+
+
+def v_maximum_dist(x,y):
+    # Maximum distance of vectors,
+    x_y_mat = np.zeros((len(x),len(y)))
+    for j in range(len(x)):
+        for i in range(len(y)):
+            x_y_mat[j,i] = np.linalg.norm(x[j] - y[i], ord=np.inf, axis=0, keepdims=True)
+    return x_y_mat
+
+
 def v_inner(x,y):
-    '''
-    Inner product distance of vectors,
-    '''
+    # Inner product distance of vectors,
     return np.dot(x,np.transpose(y))
 
 
 def v_cosin(x,y):
-    '''
-    Cosin distance of vectors,
-    '''
+    # Cosin distance of vectors,
     x_norm = np.linalg.norm(x, ord=2, axis=1, keepdims=True)
     y_norm = np.linalg.norm(y, ord=2, axis=1, keepdims=True)
     x = np.divide(x,x_norm)
@@ -70,136 +92,160 @@ def v_cosin(x,y):
 
 
 def v_l2norm(x):
-    '''
-    L2 normalize of vectors,
-    '''
+    # L2 normalize of vectors,
     x_l2norm = np.linalg.norm(x, ord=2, axis=1, keepdims=True)
     return np.divide(x,x_l2norm)
 
-'''
-Element Operations
-'''
-def e_liner(x):
-    return x
 
 
-def e_relu(x):
-    return np.maximum(x,0)
-
-
-def e_compete(x):
-    x_c = np.zeros_like(x)
-    for j,xx in enumerate(x):
-        x_c[j,np.argmax(xx)] = 1.0
-    return x_c
-
-
-def e_sigmoid(x):
-    return np.reciprocal(np.add(np.exp(np.negative(x)),1))
-
-
-def e_tanh(x):
-    return np.tanh(x)
-
-
-def e_softplus(x):
-    return np.log(np.add(1, np.exp(x)))
-
-
-def e_gauss(x):
-    return np.exp(np.negative(np.square(x)))
-
-
-def v_softmax(x):
-    x_y_mat = np.zeros((len(x),len(y)))
-    for j in range(len(x)):
-        x_soft = np.exp(x[j])
-        x[j] = np.divide(x_soft,np.sum(x_soft))
-    return x
-
-
-class k_means:
-    '''
-    k_means algorithm,
-    '''
-    def __init__(self,w_list):
-        self.w_array = np.array(w_list)
-        self.k = len(self.w_array)
-        print("k_means __init__("+ str(self.k) +"-means)")
-
-    def predict(self,x_list,dist_funx):
-        c_list=[]
-        for x in x_list:
-            c_x = np.argmin(dist_funx([x], self.w_array))
-            c_list.append(c_x)
-        return np.array(c_list)
-
-    def update(self,x_list,dist_funx):
-        c_list=[]
-        for x in x_list:
-            print(dist_funx([x], self.w_array))
-            c_x = np.argmin(dist_funx([x], self.w_array))
-            c_list.append(c_x)
-            w_array = self.w_array * 0
-        a_num = np.zeros(self.k)
-        for i,c in enumerate(c_list):
-            w_array[c] += x_list[i]
-            a_num[c] += 1.0
-        for i,a in enumerate(w_array):
-            w_array[i] /= a_num[i]
-        up_dist = np.linalg.norm(self.w_array - w_array)
-        isend = (up_dist<=0.0000000000001)
-        self.w_array = w_array
-        return isend,w_array
-
-
-def grid_2d(height,width):
-    '''
-    Make 2d grid,
-    '''
+# Grid function
+def grid_2d(shape):
+    # Make 2d grid,
+    height=shape[0]
+    width=shape[1]
     yx=[]
     for h in range(height):
         for w in range(width):
-            yx.push([h,w])
+            yx.append([h,w])
     yx = np.array(yx)
-    dist=[]
-    for i in range(len(yx)):
-        dist_i=[]
-        for j in range(len(yx)):
-            dist_i.append(euc_dist(yx[i],yx[j],ax=0))
-        dist.append(dist_i)
-    return yx,dist
+    return yx
+
+# Radius function
+def radius_mexhat(x, h_sd=[1.0, 1.0, -0.1, 3.0]):
+    up = h_sd[0] * np.exp(np.negative(0.5 * np.square(x / h_sd[1]))) / (h_sd[1] * np.sqrt(2 * np.pi))
+    down = h_sd[2] * np.exp(np.negative(0.5 * np.square(x / h_sd[3]))) / (h_sd[3] * np.sqrt(2 * np.pi))
+    y = up - down
+    return y
+
+def radius_gausshat(x, h_sd=[1.0, 1.0, 0.0]):
+    y = h_sd[0] * np.exp(np.negative(0.5 * np.square(x / h_sd[1]))) / (h_sd[1] * np.sqrt(2 * np.pi))
+    if h_sd[2] > 0.0:
+        y -= np.mean(y)
+    return y
+
+def radius_tophat(x, h_sd=[1.0, 1.0, 3.0]):
+    up_val = h_sd[0] * 0.5 / h_sd[1]
+    down_val = -h_sd[0] * 0.5 / h_sd[2]
+    up = np.zeros_like(x, np.float)
+    down = np.zeros_like(x, np.float)
+    up[np.where(np.abs(x) < (h_sd[1]))] = up_val
+    down[np.where(np.abs(x) < (h_sd[2]))] = down_val
+    y = up + down
+    return y
+
+def radius_chefhat(x, h_sd=[1.0, 1.0, 1.0]):
+    up_val = h_sd[0] * 0.5 / h_sd[1]
+    up = np.zeros_like(x, np.float)
+    up[np.where(np.abs(x) < (h_sd[1]))] = up_val
+    y = up
+    if h_sd[2] > 0.0:
+        y -= np.mean(y)
+    return y
+
+# Distant function
+def dist_euclid(x, y):
+    # Euclidean distance of vectors,
+    x_y_mat = np.zeros((len(x), len(y)))
+    for j in range(len(x)):
+        for i in range(len(y)):
+            x_y_mat[j, i] = np.linalg.norm(x[j] - y[i], ord=2, axis=0, keepdims=True)
+    return x_y_mat
+
+# Vector functiont
+def vec_euclid(x, y):
+    # Euclidean distance of vectors,
+    x_y_mat = np.zeros((len(x),len(y)))
+    for j in range(len(x)):
+        for i in range(len(y)):
+            x_y_mat[j,i] = np.linalg.norm(x[j] - y[i], ord=2, axis=0, keepdims=True)
+    return x_y_mat
+
+def vec_inner(x,y, h_sd=[1.0, 1.0]):
+    # Inner product distance of vectors,
+    return h_sd[0] *np.dot(x,np.transpose(y))
+
+# Active functiont
+def act_liner(x, h_sd=[1.0, 1.0]):
+    return x
+
+def act_relu(x, h_sd=[1.0, 1.0]):
+    return np.maximum(x, 0)
+
+def act_compete(x, h_sd=[1.0, 1.0]):
+    x_c = np.zeros_like(x)
+    for j, xx in enumerate(x):
+        x_c[j, np.argmax(xx)] = 1.0
+    return x_c
+
+def act_sigmoid(x, h_sd=[1.0, 1.0]):
+    return np.reciprocal(np.add(np.exp(np.negative(x)), 1))
+
+def act_tanh(x, h_sd=[1.0, 1.0]):
+    return np.tanh(x)
+
+def act_softplus(x, h_sd=[1.0, 1.0]):
+    return np.log(np.add(1, np.exp(x)))
+
+def act_gauss(x, h_sd=[1.0, 0.0, 1.0]):
+    return h_sd[0]*np.exp(np.negative(0.5 * np.square((x - h_sd[1]) / h_sd[2])))
 
 
 class sofm:
-    '''
-    sofm network,
-    '''
-    def __init__(self,n_in,n_out,p_out,d_out,v_func):
-        '''
-        p_out,d_out = grid_2d(height,width)
-        sf = sofm(n_in,height*width,p_out,d_out)
-        '''
+    # sofm network,
+    def __init__(self, n_in,
+                 grid_func=grid_2d, grid_para=[8,8],
+                 dist_func=dist_euclid,
+                 radius_func=radius_mexhat, radius_para=[1.0, 1.0, 3.0],
+                 vec_func=vec_euclid,
+                 act_func=act_gauss, act_para=[1.0, 0.0, 1.0]):
         self.n_in = n_in
-        self.n_out = n_out
-        mu, sigma = 0, 0.1
-        self.w = np.random.normal(mu, sigma, [n_in,n_out])
-        # self.wb = np.vstack((np.random.normal(mu, sigma, [n_in,n_out]), np.zeros((1,n_out))))
-        # self.w = self.wb[0:self.wb.shape[0] - 1, :]
-        # self.b = self.wb[self.wb.shape[0] - 1, :]
-        self.p_out = p_out
-        self.d_out = d_out
-        self.vec_func = v_func
-        self.net_func = e_liner
+        self.xy = grid_func(grid_para)
+        self.n_out = len(self.xy)
+        mu, sigma = 0, 1.0
+        self.w = np.random.normal(mu, sigma, [self.n_out,self.n_in])
+        self.dist_func = dist_func
+        self.radius_func = radius_func
+        self.dist = np.zeros((self.n_out,self.n_out))
+        self.radius = np.zeros((self.n_out,self.n_out))
+        for i in range(self.n_out):
+            for j in range(self.n_out):
+                self.dist[i, j]= self.dist_func([self.xy[i]],[self.xy[j]])[0,0]
+                self.radius[i, j]= self.radius_func(self.dist[i, j], radius_para)
+        self.vec_func = vec_func
+        self.act_func = act_func
+        self.act_para = act_para
         print("sofm __init__()")
 
     def predict(self, x_list):
-        x_list = np.hstack((np.array(x_list), np.ones((len(x_list),1))))
-        self.net_func(self.vec_func(x_list,self.w))
-        return x_list
+        x_list = np.array(x_list)
+        y_list = self.act_func(self.vec_func(x_list,self.w),self.act_para)
+        maxid_list = np.argmax(y_list, axis=1)
+        return y_list,maxid_list
 
-    def update(self, x_list, ratio):
-        x_list = np.hstack((np.array(x_list), np.ones((len(x_list),1))))
-        self.net_func(self.vec_func(x_list,self.w))
-        return x_list
+    def update(self, x_list, ratio=1.0):
+        x_list = np.array(x_list)
+        batch=len(x_list)
+        y_list,maxid_list = self.predict(x_list)
+        # print(y_list)
+        # print(maxid_list)
+        for o in range(self.n_out):
+            # print('w[o, :]',end='')
+            # print(self.w[o,:])
+            wo=np.zeros_like(self.w[o,:])
+            # print('wo',end='')
+            # print(wo)
+            for b, m in enumerate(maxid_list):
+                wo+=(1-ratio*self.radius[o, m])*self.w[o,:]+ratio*self.radius[o, m]*x_list[b,:]
+                # print('wo',end='')
+                # print(self.radius[o, m],end='')
+                # print(wo)
+            # print(wo)
+            # print('w[o, :]',end='')
+            # print(self.w[o,:])
+            # print('wo/batch',end='')
+            # print(wo/batch)
+            self.w[o,:]= wo/batch
+            # print('w[o, :]2',end='')
+            # print(self.w[o,:])
+        return self.w
 

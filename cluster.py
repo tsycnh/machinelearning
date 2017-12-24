@@ -142,8 +142,8 @@ def e_softplus(x):
     return np.log(np.add(1, np.exp(x)))
 
 
-def e_gauss(x,a=0,d=1):
-    return np.exp(np.negative(0.5*np.square((x-a)/d)))
+def e_gauss(x,a=[0,1]):
+    return np.exp(np.negative(0.5*np.square((x-a[0])/a[1])))
 
 
 def v_softmax(x):
@@ -158,25 +158,27 @@ class k_means:
     '''
     k_means algorithm,
     '''
-    def __init__(self, a_list):
+    def __init__(self, a_list, dist_funx = v_euclid_dist):
+        #self.x_array = np.array(x_list)
         self.a_array = np.array(a_list)
-        self.k = len(self.a_array)
         self.m = len(self.a_array[0])
+        self.k = len(self.a_array)
+        self.dist_funx = dist_funx
         print("k_means __init__("+ str(self.k) +"-means)")
 
-    def predict(self, x_list, dist_funx = v_euclid_dist):
+    def predict(self, x_list):
         c_list=[]
         for x in x_list:
-            c_x = np.argmin(dist_funx([x], self.a_array))
+            c_x = np.argmin(self.dist_funx([x], self.a_array))
             c_list.append(c_x)
         return np.array(c_list)
 
-    def update(self, x_list, dist_funx = v_euclid_dist, c_list = None):
+    def update(self, x_list,  c_list = None):
         if c_list is None:
             c_list=[]
             for x in x_list:
-                print(dist_funx([x], self.a_array))
-                c_x = np.argmin(dist_funx([x], self.a_array))
+                print(self.dist_funx([x], self.a_array))
+                c_x = np.argmin(self.dist_funx([x], self.a_array))
                 c_list.append(c_x)
         a_array = self.a_array * 0
         a_num = np.zeros(self.k)
@@ -237,6 +239,7 @@ class GMM:
     def update(self, x_list):
         # M-step
         x_array = np.array(x_list)
+        #x_array = np.array(x_list)
         N_array = np.sum(self.c_mat, axis=0)
         a_array = np.dot(np.transpose(self.c_mat),x_array)
         for j in range(self.k):
