@@ -240,13 +240,18 @@ class GMM:
         # M-step
         x_array = np.array(x_list)
         #x_array = np.array(x_list)
+        # Nk
         N_array = np.sum(self.c_mat, axis=0)
+        # uk
         a_array = np.dot(np.transpose(self.c_mat),x_array)
         for j in range(self.k):
             a_array[j,:] = a_array[j,:]/N_array[j]
+        # 收敛
         up_dist = np.linalg.norm(self.a_array - a_array)
         isend = (up_dist<=0.0000000000001)
+        # update
         self.a_array = a_array
+        # sd
         self.sd_array = []
         self.sdet_array = []
         for j in range(self.k):
@@ -259,6 +264,7 @@ class GMM:
             self.sdet_array.append(np.power(np.linalg.det(sd),-0.5))
         self.sd_array = np.array(self.sd_array)
         self.sdet_array = np.array(self.sdet_array)
+        # pik
         self.pi_array = N_array/ float(len(x_array))
         # E-step
         c_array = self.predict(x_array)

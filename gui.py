@@ -76,6 +76,7 @@ def plot_cluster(X,W,C,title="Cluster"):
         plt.plot(W[k,0], W[k,1], 'o', markerfacecolor=col,
                  markeredgecolor='k', markersize=14)
     plt.title(title)
+    #plt.show()
     plt.pause(0.0000001)
 
 def plot_feature_map(f,xy,maxid_list,title="Feature map"):

@@ -39,10 +39,10 @@ plt.show()
 for j in range(10):
     for i in range(len(X)):
         y_list,maxid_list =sofm.predict(np.array([A[i]]))
-        #gui.plot_feature_map(y_list,sofm.xy,maxid_list, title="Run times:" + str(i))
+        gui.plot_feature_map(y_list,sofm.xy,maxid_list, title="Run times:" + str(i))
         # print(np.array([X[i]]))
         sofm.update(np.array([A[i]]),1.0)
-        gui.plot_feature_cluster(A,sofm.w,y_list,title="Run times:" + str(i))
+        #gui.plot_feature_cluster(A,sofm.w,y_list,title="Run times:" + str(i))
 # for i in range(1000):
 #     y_list,maxid_list =sofm.predict(X)
 #     #gui.plot_feature_map(y_list,sofm.xy,maxid_list, title="Run times:" + str(i))
